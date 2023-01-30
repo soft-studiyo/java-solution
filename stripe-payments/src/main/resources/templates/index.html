@@ -11,6 +11,7 @@
 <!-- Display a card payment form -->
 <form id="payment-form" action="#"  class="form" th:action="@{/subscription}" method="GET">
     <input type="submit" value="Pay With Card" th:formaction="'/payment'">
+    <input type="submit" value="Pay with PaymentLink" th:formaction="@{/payment-link}">
     <input type="submit" value="Subscription">
 </form>
 <!--<form id="payment-form" th:action="@{/payment-method}" method="GET">
