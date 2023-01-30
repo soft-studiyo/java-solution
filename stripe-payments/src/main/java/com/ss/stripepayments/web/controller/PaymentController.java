@@ -7,7 +7,11 @@ import com.ss.stripepayments.services.StripeService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Coupon;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.PaymentLink;
+import com.stripe.model.Price;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentLinkCreateParams;
+import com.stripe.param.PriceCreateParams;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,5 +145,50 @@ public class PaymentController {
         // You may want to store charge id along with order information
 
         return new Response(true, "Success! Your charge id is " + chargeId);
+    }
+
+    @GetMapping("payment-link")
+    public String createPaymentLink(Model model) throws StripeException {
+        // Set your secret key. Remember to switch to your live secret key in production.
+// See your keys here: https://dashboard.stripe.com/apikeys
+        PriceCreateParams params =
+                PriceCreateParams
+                        .builder()
+                        .setCurrency("usd")
+                        .setCustomUnitAmount(
+                                PriceCreateParams.CustomUnitAmount.builder().setEnabled(true).build()
+                        )
+                        .setProduct("prod_NFnKzvrIYZVYY9")
+                        .build();
+
+        Price price = Price.create(params);
+
+        PaymentLinkCreateParams paymentLinkCreateParams =
+                PaymentLinkCreateParams
+                        .builder()
+                        .addLineItem(
+                                PaymentLinkCreateParams.LineItem
+                                        .builder()
+                                        .setPrice(price.getId())
+                                        .setQuantity(1L)
+                                        .build()
+                        )
+                        .setAfterCompletion(
+                                PaymentLinkCreateParams.AfterCompletion
+                                        .builder()
+                                        .setType(PaymentLinkCreateParams.AfterCompletion.Type.REDIRECT)
+                                        .setRedirect(
+                                                PaymentLinkCreateParams.AfterCompletion.Redirect
+                                                        .builder()
+                                                        .setUrl("http://localhost:8080")
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .build();
+
+        PaymentLink paymentLink = PaymentLink.create(paymentLinkCreateParams);
+
+        return "redirect:"+paymentLink.getUrl();
     }
 }
